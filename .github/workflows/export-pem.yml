@@ -35,16 +35,12 @@ jobs:
 
       - name: Export PEM certificate
         run: |
-          ALIAS=$(keytool -list -keystore upload-keystore.jks -storepass "${{ inputs.keystore_password }}" | grep -i "PrivateKeyEntry\|trustedCertEntry" | head -n 1 | cut -d',' -f1 | xargs)
+          ALIAS=$(keytool -list -keystore upload-keystore.jks -storepass "${{ inputs.keystore_password }}" | awk '/contains [0-9]+ entr/{getline; print; exit}' | sed 's/[[:space:]]*$//')
           echo "Detected alias: [$ALIAS]"
 
           if [ -z "$ALIAS" ]; then
-            echo "Auto-detect failed. Full listing below for debugging:"
+            echo "Could not auto-detect alias. Full listing below:"
             keytool -list -keystore upload-keystore.jks -storepass "${{ inputs.keystore_password }}"
-          fi
-
-          if [ -z "$ALIAS" ]; then
-            echo "Could not auto-detect alias."
             exit 1
           fi
 
