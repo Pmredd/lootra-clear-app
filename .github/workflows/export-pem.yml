@@ -3,10 +3,6 @@ name: Export PEM Certificate
 on:
   workflow_dispatch:
     inputs:
-      key_alias:
-        description: "The alias used when the keystore was created (e.g. upload)"
-        required: true
-        type: string
       keystore_password:
         description: "The keystore password"
         required: true
@@ -39,9 +35,17 @@ jobs:
 
       - name: Export PEM certificate
         run: |
+          ALIAS=$(keytool -list -keystore upload-keystore.jks -storepass "${{ inputs.keystore_password }}" | grep -E '^[A-Za-z0-9_.-]+,' | head -n 1 | cut -d',' -f1)
+          echo "Detected alias: [$ALIAS]"
+
+          if [ -z "$ALIAS" ]; then
+            echo "Could not auto-detect alias."
+            exit 1
+          fi
+
           keytool -export -rfc \
             -keystore upload-keystore.jks \
-            -alias "${{ inputs.key_alias }}" \
+            -alias "$ALIAS" \
             -storepass "${{ inputs.keystore_password }}" \
             -file upload_certificate.pem
 
