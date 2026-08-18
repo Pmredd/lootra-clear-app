@@ -3,10 +3,6 @@ name: Export PEM Certificate
 on:
   workflow_dispatch:
     inputs:
-      keystore_base64:
-        description: "Paste the base64 content of your .jks file here (no BEGIN/END lines)"
-        required: true
-        type: string
       key_alias:
         description: "The alias used when the keystore was created (e.g. upload)"
         required: true
@@ -28,9 +24,9 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Decode keystore from input
+      - name: Decode keystore from secret
         run: |
-          echo "${{ inputs.keystore_base64 }}" | base64 -d > upload-keystore.jks
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > upload-keystore.jks
 
           if [ ! -s "upload-keystore.jks" ]; then
             echo "Failed to decode keystore. Check that the base64 was pasted correctly."
@@ -56,4 +52,3 @@ jobs:
           path: upload_certificate.pem
           if-no-files-found: error
           retention-days: 1
- 
