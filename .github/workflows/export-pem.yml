@@ -1,0 +1,55 @@
+name: Export PEM Certificate
+ 
+on:
+  workflow_dispatch:
+    inputs:
+      keystore_base64:
+        description: "Paste the base64 content of your .jks file here (no BEGIN/END lines)"
+        required: true
+        type: string
+      key_alias:
+        description: "The alias used when the keystore was created (e.g. upload)"
+        required: true
+        type: string
+      keystore_password:
+        description: "The keystore password"
+        required: true
+        type: string
+ 
+jobs:
+  export-pem:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+ 
+    steps:
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+ 
+      - name: Decode keystore from input
+        run: |
+          echo "${{ inputs.keystore_base64 }}" | base64 -d > upload-keystore.jks
+ 
+          if [ ! -s "upload-keystore.jks" ]; then
+            echo "Failed to decode keystore. Check that the base64 was pasted correctly."
+            exit 1
+          fi
+ 
+      - name: Export PEM certificate
+        run: |
+          keytool -export -rfc \
+            -keystore upload-keystore.jks \
+            -alias "${{ inputs.key_alias }}" \
+            -storepass "${{ inputs.keystore_password }}" \
+            -file upload_certificate.pem
+ 
+      - name: Upload PEM as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: upload-certificate-pem
+          path: upload_certificate.pem
+          if-no-files-found: error
+          retention-days: 1
+ 
