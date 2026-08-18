@@ -1,10 +1,10 @@
-name: Build First Signed AAB
+name: Build Signed AAB
 
 on:
   workflow_dispatch:
 
 jobs:
-  build-first-aab:
+  build-aab:
     runs-on: ubuntu-latest
     timeout-minutes: 40
 
@@ -34,10 +34,16 @@ jobs:
 
       - name: Check required secrets
         env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "Missing secret: ANDROID_KEYSTORE_BASE64"
+            exit 1
+          fi
+
           if [ -z "$KEYSTORE_PASSWORD" ]; then
             echo "Missing secret: ANDROID_KEYSTORE_PASSWORD"
             exit 1
@@ -53,45 +59,30 @@ jobs:
             exit 1
           fi
 
-      - name: Generate upload keystore
+      # ------------------------------------------------------------------
+      # IMPORTANT: This step DECODES the SAME keystore every time.
+      # It never generates a new one. This is the fix for the key
+      # mismatch issue — the same upload key must be reused for every
+      # single release, forever.
+      # ------------------------------------------------------------------
+      - name: Decode upload keystore from secret
         env:
-          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          keytool -genkeypair \
-            -v \
-            -keystore upload-keystore.jks \
-            -storetype JKS \
-            -storepass "$KEYSTORE_PASSWORD" \
-            -alias "$KEY_ALIAS" \
-            -keypass "$KEY_PASSWORD" \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -dname "CN=Android Upload Key, OU=Mobile Apps, O=App Developer"
+          echo "$KEYSTORE_BASE64" | base64 -d > upload-keystore.jks
+
+          if [ ! -s "upload-keystore.jks" ]; then
+            echo "Failed to decode keystore from secret."
+            exit 1
+          fi
 
       - name: Verify upload keystore
         env:
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         run: |
-          if [ ! -s "upload-keystore.jks" ]; then
-            echo "The upload keystore was not generated."
-            exit 1
-          fi
-
           keytool -list \
             -keystore upload-keystore.jks \
             -storepass "$KEYSTORE_PASSWORD"
-
-      - name: Convert keystore to Base64
-        run: |
-          base64 -w 0 upload-keystore.jks > upload-keystore-base64.txt
-
-          if [ ! -s "upload-keystore-base64.txt" ]; then
-            echo "The Base64 file was not generated."
-            exit 1
-          fi
 
       - name: Export signing path
         run: |
@@ -120,13 +111,15 @@ jobs:
 
           echo "aab_path=$AAB_PATH" >> "$GITHUB_OUTPUT"
 
-      - name: Upload first signed AAB package
+      # NOTE: We no longer upload the keystore or its base64 file as an
+      # artifact. The keystore only ever needs to exist as the
+      # ANDROID_KEYSTORE_BASE64 secret — uploading it as a build artifact
+      # is an unnecessary security risk.
+      - name: Upload signed AAB package
         uses: actions/upload-artifact@v4
         with:
-          name: First-Signed-AAB-Package
+          name: Signed-AAB-Package
           path: |
             ${{ steps.find_aab.outputs.aab_path }}
-            upload-keystore.jks
-            upload-keystore-base64.txt
           if-no-files-found: error
-          retention-days: 1
+          retention-days: 7
