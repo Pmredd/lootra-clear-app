@@ -39,7 +39,7 @@ jobs:
       - name: Detect alias automatically
         run: |
           ALIAS=$(keytool -list -keystore upload-keystore.jks -storepass "${{ inputs.keystore_password }}" \
-            | awk '/contains [0-9]+ entr/{getline; print; exit}' \
+            | awk '/contains [0-9]+ entr/{f=1; next} f && NF>0 {print; exit}' \
             | sed 's/[[:space:]]*$//')
 
           echo "Detected alias: [$ALIAS]"
