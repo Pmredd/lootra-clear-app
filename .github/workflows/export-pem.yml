@@ -36,9 +36,15 @@ jobs:
         run: |
           keytool -list -keystore upload-keystore.jks -storepass "${{ inputs.keystore_password }}"
 
-      - name: Detect alias automatically
+      - name: Detect alias and export PEM (combined)
         run: |
-          ALIAS=$(keytool -list -v -keystore upload-keystore.jks -storepass "${{ inputs.keystore_password }}" \
+          echo "--- Keystore checksum ---"
+          md5sum upload-keystore.jks
+
+          echo "--- Full verbose listing ---"
+          keytool -list -v -keystore upload-keystore.jks -storepass "${{ inputs.keystore_password }}" -storetype JKS
+
+          ALIAS=$(keytool -list -v -keystore upload-keystore.jks -storepass "${{ inputs.keystore_password }}" -storetype JKS \
             | grep "^Alias name:" \
             | head -n 1 \
             | sed 's/^Alias name:[[:space:]]*//' \
@@ -47,20 +53,9 @@ jobs:
           echo "Detected alias: [$ALIAS]"
           echo -n "$ALIAS" | hexdump -C
 
-          if [ -z "$ALIAS" ]; then
-            echo "ERROR: Could not auto-detect alias."
-            exit 1
-          fi
-
-          printf '%s' "$ALIAS" > alias.txt
-
-      - name: Export PEM certificate
-        run: |
-          ALIAS=$(cat alias.txt)
-          echo "Using alias: [$ALIAS]"
-          echo -n "$ALIAS" | hexdump -C
-
+          echo "--- Attempting export with -storetype JKS explicit ---"
           keytool -export -rfc \
+            -storetype JKS \
             -keystore upload-keystore.jks \
             -alias "$ALIAS" \
             -storepass "${{ inputs.keystore_password }}" \
