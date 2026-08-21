@@ -53,13 +53,33 @@ jobs:
           echo "Detected alias: [$ALIAS]"
           echo -n "$ALIAS" | hexdump -C
 
-          echo "--- Attempting export with -storetype JKS explicit ---"
-          keytool -export -rfc \
+          echo "--- Attempting export with -exportcert (modern command) ---"
+          keytool -exportcert -rfc \
+            -J-Duser.language=en -J-Duser.country=US \
             -storetype JKS \
             -keystore upload-keystore.jks \
             -alias "$ALIAS" \
             -storepass "${{ inputs.keystore_password }}" \
-            -file upload_certificate.pem
+            -file upload_certificate.pem || {
+              echo "--- exportcert also failed. Trying PKCS12 conversion fallback ---"
+              keytool -importkeystore \
+                -srckeystore upload-keystore.jks -srcstoretype JKS -srcstorepass "${{ inputs.keystore_password }}" \
+                -destkeystore upload-keystore.p12 -deststoretype PKCS12 -deststorepass "${{ inputs.keystore_password }}"
+
+              echo "--- PKCS12 listing ---"
+              keytool -list -v -keystore upload-keystore.p12 -storetype PKCS12 -storepass "${{ inputs.keystore_password }}"
+
+              P12_ALIAS=$(keytool -list -v -keystore upload-keystore.p12 -storetype PKCS12 -storepass "${{ inputs.keystore_password }}" \
+                | grep "^Alias name:" | head -n 1 | sed 's/^Alias name:[[:space:]]*//' | tr -d '\r\n')
+              echo "PKCS12 alias: [$P12_ALIAS]"
+
+              keytool -exportcert -rfc \
+                -storetype PKCS12 \
+                -keystore upload-keystore.p12 \
+                -alias "$P12_ALIAS" \
+                -storepass "${{ inputs.keystore_password }}" \
+                -file upload_certificate.pem
+            }
 
           echo "PEM file created:"
           ls -lh upload_certificate.pem
