@@ -25,30 +25,47 @@ jobs:
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > upload-keystore.jks
 
           if [ ! -s "upload-keystore.jks" ]; then
-            echo "Failed to decode keystore. Check that the base64 was pasted correctly."
+            echo "ERROR: Failed to decode keystore. The ANDROID_KEYSTORE_BASE64 secret may be empty or invalid."
             exit 1
           fi
 
-      - name: List aliases in keystore
+          echo "Keystore file size:"
+          ls -lh upload-keystore.jks
+
+      - name: Show full keystore listing (for visibility)
         run: |
           keytool -list -keystore upload-keystore.jks -storepass "${{ inputs.keystore_password }}"
 
-      - name: Export PEM certificate
+      - name: Detect alias automatically
         run: |
-          ALIAS=$(keytool -list -keystore upload-keystore.jks -storepass "${{ inputs.keystore_password }}" | awk '/contains [0-9]+ entr/{getline; print; exit}' | sed 's/[[:space:]]*$//')
+          ALIAS=$(keytool -list -keystore upload-keystore.jks -storepass "${{ inputs.keystore_password }}" \
+            | awk '/contains [0-9]+ entr/{getline; print; exit}' \
+            | sed 's/[[:space:]]*$//')
+
           echo "Detected alias: [$ALIAS]"
 
           if [ -z "$ALIAS" ]; then
-            echo "Could not auto-detect alias. Full listing below:"
-            keytool -list -keystore upload-keystore.jks -storepass "${{ inputs.keystore_password }}"
+            echo "ERROR: Could not auto-detect alias."
             exit 1
           fi
+
+          echo "$ALIAS" > alias.txt
+
+      - name: Export PEM certificate
+        run: |
+          ALIAS=$(cat alias.txt)
+          echo "Using alias: [$ALIAS]"
 
           keytool -export -rfc \
             -keystore upload-keystore.jks \
             -alias "$ALIAS" \
             -storepass "${{ inputs.keystore_password }}" \
             -file upload_certificate.pem
+
+          echo "PEM file created:"
+          ls -lh upload_certificate.pem
+          echo "--- PEM content ---"
+          cat upload_certificate.pem
 
       - name: Upload PEM as artifact
         uses: actions/upload-artifact@v4
