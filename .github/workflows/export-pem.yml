@@ -38,23 +38,27 @@ jobs:
 
       - name: Detect alias automatically
         run: |
-          ALIAS=$(keytool -list -keystore upload-keystore.jks -storepass "${{ inputs.keystore_password }}" \
-            | awk '/contains [0-9]+ entr/{f=1; next} f && NF>0 {print; exit}' \
-            | sed 's/[[:space:]]*$//')
+          ALIAS=$(keytool -list -v -keystore upload-keystore.jks -storepass "${{ inputs.keystore_password }}" \
+            | grep "^Alias name:" \
+            | head -n 1 \
+            | sed 's/^Alias name:[[:space:]]*//' \
+            | tr -d '\r\n')
 
           echo "Detected alias: [$ALIAS]"
+          echo -n "$ALIAS" | hexdump -C
 
           if [ -z "$ALIAS" ]; then
             echo "ERROR: Could not auto-detect alias."
             exit 1
           fi
 
-          echo "$ALIAS" > alias.txt
+          printf '%s' "$ALIAS" > alias.txt
 
       - name: Export PEM certificate
         run: |
           ALIAS=$(cat alias.txt)
           echo "Using alias: [$ALIAS]"
+          echo -n "$ALIAS" | hexdump -C
 
           keytool -export -rfc \
             -keystore upload-keystore.jks \
