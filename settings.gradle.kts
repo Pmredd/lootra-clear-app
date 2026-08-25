@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "Lootra Wellbeing"
+rootProject.name = "Lootra Digital Rewards"
 
 include(":app")

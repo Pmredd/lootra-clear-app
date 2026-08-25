@@ -37,7 +37,7 @@ class WellbeingForegroundService : Service() {
         Log.d("WellbeingFGS", "Foreground tracking service starting...")
         
         // Build initial notification
-        val notification = buildNotification("Monitoring screen usage", "Lootra Wellbeing is active")
+        val notification = buildNotification("Monitoring screen usage", "Lootra Digital Rewards is active")
         
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -188,7 +188,7 @@ class WellbeingForegroundService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val serviceChannel = NotificationChannel(
                 CHANNEL_ID,
-                "Lootra Wellbeing Tracking",
+                "Lootra Digital Rewards Tracking",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
                 description = "Monitors device usage, screen goals, and productivity scores."

@@ -1,6 +1,6 @@
 {
-  "name": "Lootra Wellbeing",
-  "description": "Lootra Digital Wellbeing System to monitor and analyze device usage statistics",
+  "name": "Lootra Digital Rewards",
+  "description": "Lootra Digital Rewards System to monitor and analyze device usage statistics and unlock rewards",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
