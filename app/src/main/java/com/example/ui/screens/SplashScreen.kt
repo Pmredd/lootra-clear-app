@@ -129,7 +129,7 @@ fun SplashScreen(
 
             // Cozy Slogan tag
             Text(
-                text = "PERFORMANCE & COGNITION WELLNESS",
+                text = "Better Screen. Better Rewards",
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontSize = 10.sp,
                     fontWeight = FontWeight.SemiBold,
