@@ -201,7 +201,7 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Text(
-                        text = "LOOTRA WELLBEING",
+                        text = "LOOTRA DIGITAL REWARDS",
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 2.sp,

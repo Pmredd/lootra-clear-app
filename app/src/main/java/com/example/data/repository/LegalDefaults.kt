@@ -140,7 +140,7 @@ object LegalDefaults {
                 updatedAt = System.currentTimeMillis(),
                 updatedBy = "Lootra Engineering",
                 content = """
-                    ABOUT LOOTRA - DIGITAL WELLBEING & CAMPUS REWARDS
+                    ABOUT LOOTRA - DIGITAL REWARDS & CAMPUS PRODUCTIVITY
 
                     1. MISSION
                     Lootra empowers students to build healthier digital habits by transforming phone screen time discipline into tangible campus rewards, discounts, and entertainment.

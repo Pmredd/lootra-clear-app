@@ -114,7 +114,7 @@ fun UsagePermissionScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Activate Lootra Wellbeing",
+            text = "Activate Lootra Digital Rewards",
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.ExtraBold,
                 color = Color.White,

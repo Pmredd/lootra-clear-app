@@ -72,7 +72,7 @@ fun DashboardScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        "Lootra Wellbeing",
+                        "Lootra Digital Rewards",
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold)
                     )
                 },
