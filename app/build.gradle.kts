@@ -144,8 +144,8 @@ dependencies {
 
 configurations.all {
   resolutionStrategy {
-    force("com.facebook.soloader:soloader:0.11.0")
-    force("com.facebook.soloader:nativeloader:0.11.0")
-    force("com.facebook.soloader:annotation:0.11.0")
+    force("com.facebook.soloader:soloader:0.10.5")
+    force("com.facebook.soloader:nativeloader:0.10.5")
+    force("com.facebook.soloader:annotation:0.10.5")
   }
 }
