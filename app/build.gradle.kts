@@ -108,6 +108,7 @@ dependencies {
   implementation(libs.androidx.room.runtime)
   implementation("androidx.work:work-runtime-ktx:2.9.1")
   implementation(libs.cloudinary.android)
+  implementation(libs.fresco)
   implementation(libs.soloader)
   implementation(libs.soloader.nativeloader)
   implementation(libs.soloader.annotation)
