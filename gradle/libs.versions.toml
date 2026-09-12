@@ -41,6 +41,7 @@ secretsGradlePlugin = "2.0.1"
 cloudinaryAndroid = "2.4.0"
 media3 = "1.4.1"
 soloader = "0.10.5"
+fresco = "3.7.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -96,6 +97,7 @@ cloudinary-android = { group = "com.cloudinary", name = "cloudinary-android", ve
 soloader = { group = "com.facebook.soloader", name = "soloader", version.ref = "soloader" }
 soloader-nativeloader = { group = "com.facebook.soloader", name = "nativeloader", version.ref = "soloader" }
 soloader-annotation = { group = "com.facebook.soloader", name = "annotation", version.ref = "soloader" }
+fresco = { group = "com.facebook.fresco", name = "fresco", version.ref = "fresco" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
